@@ -1,0 +1,15 @@
+{
+  "local": {
+    "url": "http://localhost",
+    "ports": {
+      "admin": 3000,
+      "error": 3003
+    }
+  },
+  "production": {
+    "url": {
+      "admin": "https://rf-admin.api.enkeldigital.com/",
+      "error": "https://rf-error.api.enkeldigital.com/"
+    }
+  }
+}
