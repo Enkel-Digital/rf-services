@@ -3,7 +3,7 @@
  * Using "Firebase Auth" for authentication
  */
 
-const admin = require("firebase-admin");
+import admin from "firebase-admin";
 
 /**
  * Apply this middleware to auth protected routes.

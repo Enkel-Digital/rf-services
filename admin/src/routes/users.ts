@@ -8,7 +8,7 @@
  * thus individual auth verifier middleware not needed
  */
 
-const express = require("express");
+import express from "express";
 const router = express.Router();
 const SQLdb = require("@enkeldigital/ce-sql");
 const onlyOwnResource = require("../middleware/onlyOwnResource");

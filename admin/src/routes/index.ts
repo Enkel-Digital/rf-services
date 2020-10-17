@@ -1,5 +1,5 @@
 /** @notice Parent router where all other routers are mounted onto. */
-const express = require("express");
+import express from "express";
 const router = express.Router();
 
 const auth = require("../middleware/auth");
