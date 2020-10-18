@@ -52,6 +52,7 @@ npm run buildDocs
 		"Type of module":"file name"
 		```
 	- E.g. logger for transfer route module in /routes dir should be named
-		```js
-		const logger = require("@lionellbriones/logging").default("route:transfer");
+		```ts
+		import createLogger from "@lionellbriones/logging";
+		const logger = createLogger("routes:transfer");
 		```
