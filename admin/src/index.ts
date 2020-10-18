@@ -13,7 +13,7 @@ const helmet = require("helmet");
 const compression = require("compression");
 const cors = require("cors");
 
-const createLogger = require("@lionellbriones/logging").default;
+import createLogger from "@lionellbriones/logging";
 const logger = createLogger("index.js:Server Setup");
 
 /**

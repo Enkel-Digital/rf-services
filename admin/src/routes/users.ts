@@ -13,7 +13,7 @@ const router = express.Router();
 const SQLdb = require("@enkeldigital/ce-sql");
 const onlyOwnResource = require("../middleware/onlyOwnResource");
 
-const createLogger = require("@lionellbriones/logging").default;
+import createLogger from "@lionellbriones/logging";
 const logger = createLogger("routes:users");
 
 /**
