@@ -15,8 +15,5 @@
 # Allow package json files to be copied over for installing dependencies
 !package*.json
 
-# Only allow src/ to be copied in
-!src/
-
-# Ignore the test files in src/
-src/test/
+# Only allow TypeScript build output dist/ to be copied in
+!dist/
