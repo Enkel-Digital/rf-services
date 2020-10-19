@@ -52,9 +52,21 @@ GET {{host}}/points/1
 GET {{host}}/subscription/1
 {{authHeader}}
 
-### Get product details
-# GET /product/details/:classID
-GET {{host}}/product/details/1
+### Get bot details
+# GET /bot/:botID
+GET {{host}}/bot/:botID
+
+### Create new bot
+# POST /bot/new
+POST {{host}}/bot/new
+
+### Update bot details
+# PUT /bot/:botID
+PUT {{host}}/bot/:botID
+
+### Delete bot
+# DELETE /bot/:botID
+DELETE {{host}}/bot/:botID
 
 ### Get class reviews
 # GET /reviews/class/:classID
