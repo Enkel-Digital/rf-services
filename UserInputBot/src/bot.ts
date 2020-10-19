@@ -28,24 +28,25 @@ bot.onCommand("start", async function (parsedCommand, update) {
     if (!deepLinkingArgs)
       return this.replyMessage("Invalid registration link!");
 
-    // register the user
-    // @todo Handle re-registrations, should not have double registration
-    console.log("Deeplink:", deepLinkingArgs[0]);
-    console.log("User's chat ID:", update.message.chat.id);
-
-    // Reply first to tell the user that registration process just started... DB might take some time
-
     // @todo Parse and verify token before using its data
     const token = deepLinkingArgs[0];
 
+    // register the user
+    // @todo Handle re-registrations, should not have double registration
+    console.log("Deeplink token:", token);
+    console.log("User's chat ID:", update.message.chat.id);
+
     // @todo Verify the deeplink
     // require("./verifyDeeplink")(SQLdb, token);
+
+    // Reply first to tell the user that registration process just started... DB might take some time
 
     // @todo Save the user's details in the DB
 
     // Get from DB what product/tag the deeplink represents and let the user know what channel are they sending feedback to
     // this.replyMessage(`Feedback channel/link for ${deeplink}`);
 
+    // @todo Customize this message, can be set by biz user
     this.replyMessage("Send whatever feedback you have here!");
   } catch (error) {
     // @todo log the error
