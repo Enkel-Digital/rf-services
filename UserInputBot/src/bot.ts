@@ -1,25 +1,35 @@
 require("dotenv").config();
 
 import yatbl from "yatbl";
-import SQLdb from "@enkeldigital/ce-sql";
 
-// Use different bots depending on what type of bot to run
-const bot = new (process.env.NODE_ENV === "production"
-  ? yatbl.WebhookBot
-  : yatbl.PollingBot)(process.env.BOT_TOKEN);
+function _newBot(BOT_TOKEN): yatbl.Bot {
+  // Start a bot using the bare Bot Class without
+  const bot = new yatbl.Bot(BOT_TOKEN);
 
-const tapi = bot.tapi;
+  /* Register all the bot shortHands */
+  bot.addShortHand(yatbl.shortHands.replyMessage);
 
-// Set/register bot commands with tele API
-require("./setCommands")(tapi);
+  /* Register all the command handlers */
+  bot.onCommand("start", require("./startCommand"));
+  bot.onCommand("unsub", require("./unsub"));
 
-/* Register all the bot shortHands */
-bot.addShortHand(yatbl.shortHands.replyMessage);
+  // Use different bots depending on what type of bot to run
+  if (process.env.NODE_ENV === "production") return bot;
+  else {
+    // Basically create a new PollingBot for its polling mechanism, but use the same bot._onUpdate call directly
+    const PollingBot = new yatbl.PollingBot(BOT_TOKEN);
+    PollingBot._onUpdate = bot._onUpdate;
+    PollingBot.startPolling(0);
+    return PollingBot;
+  }
+}
 
-/* Register all the command handlers */
-bot.onCommand("start", require("./startCommand"));
-bot.onCommand("unsub", require("./unsub")(SQLdb));
+const botCache: { [key: string]: yatbl.Bot } = {};
 
-// Use different bots depending on what type of bot to run
-if (process.env.NODE_ENV === "production") bot.startServer();
-else bot.startPolling(0);
+export default function newBot(BOT_TOKEN): yatbl.Bot {
+  if (botCache[BOT_TOKEN]) return botCache[BOT_TOKEN];
+
+  const bot: typeof yatbl.Bot = _newBot(BOT_TOKEN);
+  botCache[BOT_TOKEN] = bot;
+  return bot;
+}
