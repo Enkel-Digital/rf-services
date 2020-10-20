@@ -1,7 +1,9 @@
 // https://www.dbml.org/docs/
 
+// @todo can we split dbml files up, so that we can define a DB schema over many files
 // @todo convert bigint to int if possible
-// convert most variable length strings to fixed lengths
+// @todo convert most variable length strings to fixed lengths
+// @todo Might wanna use unsigned int if possible?
 
 // Legend:
 // PG (Attribute) -> PostgreSQL/SQL (preferred DB choice)
@@ -12,9 +14,6 @@ Project RF {
   database_type: 'PostgreSQL'
   Note: 'SQL DB for RF'
 }
-
-// @todo can we plait the dbml files up, so that we can have many of this?
-// @todo Since we assume it is 1 bot for each "service" the devs run, we dun care what service, we just care about the bot...
 
 // FS
 // Business
@@ -52,10 +51,10 @@ Table businessUsers {
   deleted boolean [default: false]
 }
 
-// Table used to temporarily store new partnerAccounts creation requests
+// Table used to temporarily store new businessUsers creation requests
 // Data stored here will also be sent to the employees' email for them to proof their identify
 // Will be removed once partnerAccount creation is fully completed
-Table new_partnerAccounts {
+Table new_businessUsers {
   id int [pk, increment, not null, unique]
   createdAt bigint [default: `EXTRACT(EPOCH FROM now() at time zone 'utc')`]
   businessID int [ref: > business.id, not null]
@@ -77,11 +76,11 @@ Table bots {
   id int [pk, increment, not null, unique]
   createdAt bigint [default: `EXTRACT(EPOCH FROM now() at time zone 'utc')`]
   createdBy int [ref: > businessUsers.id, not null]
-  // @todo Telegram bot token should be stored somewhere safer instead like vault or something.
-  token varchar [not null, unique] // Token for the telegram bot itself
   businessID int [ref: > business.id, not null] // Dont need to be unique as we might allow the business to create multiple bots
   name varchar [not null, unique] // Maybe use ID or tokeN? that maps to vault entry?
   description varchar [null] // optional description
+  // @todo Telegram bot token should be stored somewhere safer instead like vault or something.
+  token varchar [not null, unique] // Token for the telegram bot itself
 }
 
 // API key / tokens table
@@ -105,16 +104,24 @@ Table serviceAccounts {
   validTill bigint [null] // Defaults to indefinite
 }
 
-// Links for the bots
+// deeplinking tokens
+// need to define if this is for personal use or group? Or do later
+// Do we want to specify only who can access this link? Or are all links open to public?
 Table links {
   id int [pk, increment, not null, unique]
   createdAt bigint [default: `EXTRACT(EPOCH FROM now() at time zone 'utc')`]
   createdBy int [ref: > businessUsers.id, not null]
-  // Do we want to specify only who can access this link? Or are all links open to public?
-  link varchar [not null, unique] // @todo This can be fixed max length
+  botID int [ref: > bots.id, not null]
+  
+  // Instead of defining the full link with the Bot URL and what not, which is either always the same, or can be changedd?
+  // Just store the deeplinking payload, the linkToken will be unique to that bot anyways
+  // @todo This can be fixed max length
+  // Should this be a random generated value by the DB? Or we random generate then insert?
+  linkToken varchar [not null, unique]
 }
 
-
+// Need another table to specify the properties of this link? Like what is this about, how is it used and stuff.
+// Maybe add description column to the link
 
 
 
@@ -173,6 +180,9 @@ Table users {
   // Perhaps add a default insert value, like a rand value if none is given then return to the dev
   // @todo needs to have a limit
   app_UUID varchar [not null] // Allow developers to uniquely identify their own users however they want.
+  
+  // This is not unique, because 1 user can be using many bots from diff companies that use our services
+  // @todo String or int? Or tele API dont care?
   t_chat_id varchar [not null] // telegram chat ID
   deleted boolean [default: false]
 }
@@ -182,20 +192,18 @@ Table userSettings {
   id int [pk, not null, ref: - users.id]
 }
 
-// Reviews from the user that comes in.
-// PG + Trimmable (If trimmed, we need to make this into a seperate service that will hold a materialized view with cached result)
-// PG needed for advance processing, to add a caching layer in front of queries for this with a 1 ~ 2 days expiry?
+// Reviews are whatever the user sends via the bot.
 Table reviews {
   id bigint [pk, increment, not null, unique]
-  reviewedOn bigint [default: `EXTRACT(EPOCH FROM now() at time zone 'utc')`]
+  createdAt bigint [default: `EXTRACT(EPOCH FROM now() at time zone 'utc')`]
+  botID int [ref: > bots.id, not null]
   userID int [ref: > users.id, not null]
-  // @todo We might want to somehow link to a product or tag. Use a seperate table instead
-  // classID int [ref: > classes.id, not null]
-  // @todo Add what time was the lesson so partner can take action -- Implement after classSchedule is implemented
-  points int [not null]
-  description varchar [null]
+  linkID int [ref: > links.id, not null]
+  message varchar [not null]
 }
 
+// So like say a new user uses our service, and the company wanna tag them, either based on the time they first sent feedback or what not. Or location?
+// This can only be set when the user use the start command to register themselves right
 // Tags describing users, set by the developers
 // Give users tags to filter and send to specific group of users
 // Used to group user's together to mass mail them
@@ -221,63 +229,6 @@ Table userTags {
 
 
 
-// @todo Change this to be the sub plan of the business
-// Trimmable + PG
-// Since planID is fixed overtime, it is used to get cost of plan and currency, instead of storing a copy of it in this table
-Table userPlans {
-  id bigint [pk, increment, not null, unique]
-  // @todo Add updatedAt to track when this is updated for analytics purposes?
-  createdAt bigint [default: `EXTRACT(EPOCH FROM now() at time zone 'utc')`]
-  userID int [ref: > users.id, not null] // Many rows with each row being 1 plan in users history
-  planID int [ref: > subscriptionPlans.id, not null]
-  // Might look into using ISO 8061 defaults, but using unix seconds for now for consistency
-  start bigint [not null] // Although can be generated, using not null and no default, forces server to always generate
-  end bigint [null]
-}
-
-// Trimmable + PG
-// Since topupID is fixed overtime, it is used to get cost of plan and currency, instead of storing a copy of it in this table
-// Each topup is only valid in same period it is purchased. Determined by checking if purchaseTime is between start and end of current period
-Table userTopups {
-  id bigint [pk, increment, not null, unique]
-  // @todo Add updatedAt to track when this is updated for analytics purposes?
-  purchaseTime bigint [default: `EXTRACT(EPOCH FROM now() at time zone 'utc')`]
-  userID int [ref: > users.id, not null] // Many rows with each row being 1 topup in users history
-  topupID int [ref: > topupOptions.id, not null]
-}
-
-// @todo Transactions table to track their use
-// @todo need to add selected time of class to this too right?
-// @todo Do we need to add the start time of the class?
-// PG + Trimmable (keep like the latest 20 user past classes, allow user to request for more)
-// Instead of relying on a Points table that needs to be updated every month, perhaps use a transactions table and the userPlans table to compute the points on demand
-// Bascially records of user bookings and cancellation events and more
-// Classes that the users have booked and did not cancel
-Table userBookingTransactions {
-  id bigint [pk, increment, not null, unique]
-  actionTime bigint [default: `EXTRACT(EPOCH FROM now() at time zone 'utc')`] // TS should be provided by client, but defaults to server timestamp if none
-  userID int [ref: > users.id, not null]
-  // classID int [ref: > classes.id, not null]
-  points int [not null] // A copy of the points of the class at the moment of action, as points of a class can be changed by partner later on
-  // Only store start time as end time should be computed using length of class
-  // Might look into using ISO 8061 defaults, but using unix seconds for now for consistency
-  startTime bigint [not null]
-  // @todo might store end time too as a hack guard, as partners can change the length of the class to cheat the system and gain points even before class actually ended and then the user's cannot cancel.
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // @todo add columns start/end, to allow us to specify when this is avail to user for? Like good for setting promos
 // All subscription plans across time
 Table subscriptionPlans {
@@ -288,6 +239,7 @@ Table subscriptionPlans {
   copywriting varchar [not null] // HTML allowed
   currency varchar [not null]
   price int [not null] // Price in the specified currency
+  // @todo Instead of this, maybe something diff
   totalPoints int [not null]
 }
 
@@ -309,4 +261,50 @@ Table topupOptions {
   currency varchar [not null]
   price int [not null]
   totalPoints int [not null]
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+// Trimmable + PG
+// Since planID is fixed overtime, it is used to get cost of plan and currency, instead of storing a copy of it in this table
+Table businessPlans {
+  id bigint [pk, increment, not null, unique]
+  // @todo Add updatedAt to track when this is updated for analytics purposes?
+  createdAt bigint [default: `EXTRACT(EPOCH FROM now() at time zone 'utc')`]
+  businessID int [ref: > business.id, not null] // Many rows with each row being 1 plan in users history
+  planID int [ref: > subscriptionPlans.id, not null]
+  // Might look into using ISO 8061 defaults, but using unix seconds for now for consistency
+  start bigint [not null] // Although can be generated, using not null and no default, forces server to always generate
+  end bigint [null]
+}
+
+// Trimmable + PG
+// Since topupID is fixed overtime, it is used to get cost of plan and currency, instead of storing a copy of it in this table
+// Each topup is only valid in same period it is purchased. Determined by checking if purchaseTime is between start and end of current period
+Table businessPlanTopups {
+  id bigint [pk, increment, not null, unique]
+  // @todo Add updatedAt to track when this is updated for analytics purposes?
+  purchaseTime bigint [default: `EXTRACT(EPOCH FROM now() at time zone 'utc')`]
+  businessID int [ref: > business.id, not null] // Many rows with each row being 1 topup in users history
+  topupID int [ref: > topupOptions.id, not null]
+}
+
+// PG + Trimmable (keep like the latest 20 user past classes, allow user to request for more)
+// Transactions (user feedback ... to compute business usage)
+Table transactions {
+  id bigint [pk, increment, not null, unique]
+  actionTime bigint [default: `EXTRACT(EPOCH FROM now() at time zone 'utc')`] // TS should be provided by client, but defaults to server timestamp if none
+  botID int [ref: > bots.id, not null]
+  // Might look into using ISO 8061 defaults, but using unix seconds for now for consistency
+  startTime bigint [not null]
 }
