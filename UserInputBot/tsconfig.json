@@ -15,8 +15,8 @@
     /* Allow javascript files to be compiled. */
     "allowJs": true,
     // "checkJs": true,                       /* Report errors in .js files. */
-    /* Generates corresponding '.d.ts' file. */
-    "declaration": true,
+    // Dont need to generate declaration since this will not be used as a lib
+    // "declaration": true,                   /* Generates corresponding '.d.ts' file. */
     // "declarationMap": true,                /* Generates a sourcemap for each corresponding '.d.ts' file. */
     // "sourceMap": true,                     /* Generates corresponding '.map' file. */
     // "outFile": "./",                       /* Concatenate and emit output to single file. */
@@ -28,7 +28,8 @@
     // "tsBuildInfoFile": "./",               /* Specify file to store incremental compilation information */
     /* Do not emit comments to output. */
     "removeComments": true,
-    // "importHelpers": true,                 /* Import emit helpers from 'tslib'. */
+    /* Import emit helpers from 'tslib'. */
+    "importHelpers": true,
     // "downlevelIteration": true,            /* Provide full support for iterables in 'for-of', spread, and destructuring when targeting 'ES5' or 'ES3'. */
     // "isolatedModules": true,               /* Transpile each file as a separate module (similar to 'ts.transpileModule'). */
 

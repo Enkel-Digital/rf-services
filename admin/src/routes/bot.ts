@@ -58,6 +58,10 @@ router.post("/new", express.json(), async (req, res) => {
     // @todo Token might be stored somewhere else in the future
     await SQLdb("bots").insert(bot);
 
+    // Only run this via the admin service when the bot is first connected to our service
+    // Set/register bot commands with tele API
+    // require("./setCommands")(tapiFF(bot.token));
+
     res.status(201).json({ success: true });
   } catch (error) {
     logger.error(error);
