@@ -18,132 +18,108 @@ const createLogger = require("@lionellbriones/logging").default;
 const logger = createLogger("routes:reviews");
 
 /**
- * Get reviews for a class
- * @name GET /reviews/class/:classID
- * @returns {object} Array of Class review objects
+ * Get review stats and review IDs for bot belonging to a business
+ * @name GET /reviews/bot/:botID
+ * @returns {object} Review stats and an Array of review IDs that can be loaded 1 by 1 via the get reviews API
  */
-router.get("/class/:classID", async (req, res) => {
+router.get("/bot/:botID", async (req, res) => {
   try {
-    const { classID } = req.params;
+    const { botID } = req.params;
 
+    // What happens if I use destructure syntax when the returned value is undefined? or null?
     const numberOfReviews = (
       await SQLdb("reviews")
-        .where({ classID })
-        .count("classID") // Need to select a specific column to count and should avoid count(*) as some drivers do not support it.
+        .where({ botID })
+        .count("botID") // Need to select a specific column to count and should avoid count(*) as some drivers do not support it.
         .first()
     ).count;
 
-    const pointsArray = await SQLdb("reviews")
-      .where({ classID })
-      .select("points");
-
-    const ratings =
-      pointsArray.reduce((a, b) => a + b.points, 0) / pointsArray.length;
-
-    const userReviews = await SQLdb("reviews")
-      .where({ classID })
-      .select("reviewedOn", "points", "description")
-      // Arbitrary limit. @todo Allow scrolling/pagination
-      .limit(12)
-      .orderBy("reviewedOn", "desc");
+    // @todo See if there is anyway I can query like this instead of doing an additional mapping later myself
+    // const reviewObjectsWithOnlyIDs: Array<string> = await SQLdb("reviews")
+    // String instead of Number, as id is stored as a bigint in Table
+    const reviewIDs: Array<string> = await SQLdb("reviews")
+      .where({ botID })
+      .select("id")
+      // Arbitrary limit, might need to increase for bigger customers. @todo Allow scrolling/pagination
+      .limit(1000000)
+      .then((reviewObjectsWithOnlyIDs: Array<{ id: string }>) =>
+        reviewObjectsWithOnlyIDs.map(
+          (reviewObjectsWithOnlyID) => reviewObjectsWithOnlyID.id
+        )
+      );
 
     res.json({
-      success: true,
-      reviews: {
-        numberOfReviews,
-        // If no reviews, thus no ratings, use undefined to sent back nothing
-        // Else, convert ratings to 1 d.p
-        ratings: ratings ? ratings.toFixed(1) : undefined,
-        userReviews,
-      },
+      ok: true,
+      reviewStats: { numberOfReviews },
+      reviewIDs,
     });
   } catch (error) {
     logger.error(error);
-    res.status(500).json({ success: false, error: error.message });
+    res.status(500).json({ ok: false, error: error.message });
   }
 });
 
 /**
- * Get reviews for a partner
- * @name GET /reviews/partner/:partnerID
- * @returns {object} Partner Reviews object
+ * Get review details with a reviewID
+ * @name GET /reviews/details/?:reviewID||?:reviewIDs
+ * @returns {object} Review object(s)
+ *
+ * Can support array of review IDs, instead of 1 by 1, but user/client
+ * should limit the lenght too to prevent slow responses.
+ */
+router.get("/details/", async (req, res) => {
+  try {
+    const { reviewID, reviewIDs } = req.query;
+
+    if (reviewID)
+      return res.status(200).json({
+        review: await SQLdb("reviews")
+          .where({ id: reviewID })
+          // Select only columns needed
+          // botID is used so that when we return the data, the client can filter by bot IDs, or just store them together
+          // userID is needed when if the business user decides to connect with them directly.
+          // @todo linkID is needed to get the tags to filter these users by, or, we could just attach the links directly...
+          .select("botID", "userID", "linkID", "message")
+          .first(),
+      });
+
+    if (reviewIDs)
+      return res.status(200).json({
+        review: await SQLdb("reviews")
+          // @todo How to select multiple vals???
+          .where({ id: reviewID })
+          // Select only columns needed
+          // botID is used so that when we return the data, the client can filter by bot IDs, or just store them together
+          // userID is needed when if the business user decides to connect with them directly.
+          // @todo linkID is needed to get the tags to filter these users by, or, we could just attach the links directly...
+          .select("botID", "userID", "linkID", "message"),
+      });
+  } catch (error) {
+    logger.error(error);
+    res.status(500).json({ ok: false, error: error.message });
+  }
+});
+
+/**
+ * Get reviews stats across all bots for a business. ONLY available if the business have more then 1 bots, and if the user have sufficient permissions to view bots across the entire business
+ * @name GET /reviews/business/:businessID
+ * @returns {object} Review stats across all bots from a business
  *
  * @todo To implement
  */
-router.get("/partner/:partnerID", async (req, res) => {
+router.get("/reviews/business/:businessID", async (req, res) => {
   try {
-    const { partnerID } = req.params;
+    const { businessID } = req.params;
 
-    const partnerReviewsJoin = () =>
-      SQLdb("reviews")
-        .join("classes", "reviews.classID", "=", "classes.id")
-        .where({ partnerID });
+    // res.status(200).json({
+    //   ok: true,
+    //   reviewStats: { numberOfReviews },
+    // });
 
-    const numberOfReviews = (
-      await partnerReviewsJoin()
-        .count("partnerID") // Need to select a specific column to count and should avoid count(*) as some drivers do not support it.
-        .first()
-    ).count;
-
-    const pointsArray = await partnerReviewsJoin().select("reviews.points");
-
-    const ratings =
-      pointsArray.reduce((a, b) => a + b.points, 0) / pointsArray.length;
-
-    // Include classID for the partner reviews
-    const userReviews = await partnerReviewsJoin()
-      .select(
-        "reviewedOn",
-        "reviews.classID",
-        "reviews.points",
-        "reviews.description"
-      )
-      // Arbitrary limit. @todo Allow scrolling/pagination
-      .limit(12)
-      .orderBy("reviewedOn", "desc");
-
-    res.json({
-      success: true,
-      reviews: {
-        numberOfReviews,
-        // If no reviews, thus no ratings, use undefined to sent back nothing
-        // Else, convert ratings to 1 d.p
-        ratings: ratings ? ratings.toFixed(1) : undefined,
-        userReviews,
-      },
-    });
+    res.status(405).json({ ok: false, error: "unimplemented" });
   } catch (error) {
     logger.error(error);
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-
-/**
- * Leave a new review after user have attended a class
- * @name POST /reviews/new/:classID
- * @param {String} userID
- * @param {String} description
- * @param {Number} points
- * @returns {object} Success indicator
- */
-router.post("/new/:classID", auth, express.json(), async (req, res) => {
-  try {
-    const { classID } = req.params;
-    const { userID, description, points } = req.body;
-
-    if (!classID) throw new Error("Missing classID");
-
-    await SQLdb("reviews").insert({
-      classID,
-      userID,
-      description,
-      points,
-    });
-
-    res.status(201).json({ success: true });
-  } catch (error) {
-    logger.error(error);
-    res.status(500).json({ success: false, error: error.message });
+    res.status(500).json({ ok: false, error: error.message });
   }
 });
 
