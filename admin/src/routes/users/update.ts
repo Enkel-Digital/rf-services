@@ -19,10 +19,10 @@ const logger = createLogger("routes:users:update");
 /**
  * Update user details object
  * @name PUT /user/:userID
- * @returns {object} success indicator
+ * @returns {object} ok indicator
  */
 router.put("/", onlyOwnResource, (req, res) => {
-  res.json({ success: false, error: "not implemented yet" });
+  res.json({ ok: false, error: "not implemented yet" });
 });
 
 module.exports = router;

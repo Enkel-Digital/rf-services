@@ -37,7 +37,7 @@ export default async function auth(req, res, next) {
     } else throw new Error("Missing auth token");
   } catch (error) {
     return res.status(401).json({
-      success: false,
+      ok: false,
       error: error.message || "UNAUTHORIZED",
     });
   }

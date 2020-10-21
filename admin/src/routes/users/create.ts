@@ -21,7 +21,7 @@ const logger = createLogger("routes:users:create");
  * @name POST /user/new/
  * @param {String} userID
  * @param {Object} user
- * @returns {object} success indicator
+ * @returns {object} ok indicator
  *
  * @todo Set restrictions on who can call this API
  * @todo Should support like a hook system.
@@ -36,10 +36,10 @@ router.post("/new", express.json(), async (req, res) => {
 
     await SQLdb("userAccounts").insert(user);
 
-    res.status(201).json({ success: true });
+    res.status(201).json({ ok: true });
   } catch (error) {
     logger.error(error);
-    res.status(500).json({ success: false, error: error.message });
+    res.status(500).json({ ok: false, error: error.message });
   }
 });
 

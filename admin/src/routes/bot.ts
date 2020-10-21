@@ -29,11 +29,11 @@ router.get("/:botID", onlyOwnResource, async (req, res) => {
     // @todo Filter columns, and leave out data like the token?
     const bot = await SQLdb("bots").where({ id: botID }).first();
 
-    if (bot) res.json({ success: true, bot });
-    else res.status(404).json({ success: false, error: "No such bot" });
+    if (bot) res.json({ ok: true, bot });
+    else res.status(404).json({ ok: false, error: "No such bot" });
   } catch (error) {
     logger.error(error);
-    res.status(500).json({ success: false, error: error.message });
+    res.status(500).json({ ok: false, error: error.message });
   }
 });
 
@@ -42,8 +42,9 @@ router.get("/:botID", onlyOwnResource, async (req, res) => {
  * @name POST /bot/new
  * @param {String} botID
  * @param {Object} user
- * @returns {object} success indicator
+ * @returns {object} ok indicator
  *
+ * @todo Limit this, so this needs to hook up with the billing service.
  * @todo Should support like a hook system.
  * All the things that should be ran when a new user is created should be posted here as a hook
  * then on user creation, either call all the hooks, or publish a event for all the listeners to use.
@@ -62,27 +63,27 @@ router.post("/new", express.json(), async (req, res) => {
     // Set/register bot commands with tele API
     // require("./setCommands")(tapiFF(bot.token));
 
-    res.status(201).json({ success: true });
+    res.status(201).json({ ok: true });
   } catch (error) {
     logger.error(error);
-    res.status(500).json({ success: false, error: error.message });
+    res.status(500).json({ ok: false, error: error.message });
   }
 });
 
 /**
  * Update bot details
  * @name PUT /bot/:botID
- * @returns {object} success indicator
+ * @returns {object} ok indicator
  */
 router.put("/:botID", (req, res) => {
-  res.json({ success: false, error: "not implemented yet" });
+  res.json({ ok: false, error: "not implemented yet" });
 });
 
 /**
  * Delete bot
  * @name DELETE /bot/:botID
  * @function
- * @returns {object} Success indicator
+ * @returns {object} ok indicator
  */
 router.delete("/:botID", async (req, res) => {
   try {
@@ -93,10 +94,10 @@ router.delete("/:botID", async (req, res) => {
 
     // @todo Update billing status
 
-    res.json({ success: true });
+    res.json({ ok: true });
   } catch (error) {
     logger.error(error);
-    res.status(500).json({ success: false, error: error.message });
+    res.status(500).json({ ok: false, error: error.message });
   }
 });
 

@@ -29,7 +29,5 @@ module.exports = function (err, req, res, next) {
   if (res.statusCode < 400) res.status(err.code || 500);
 
   // End the request after making sure status code is set
-  res
-    .status(err.code ? err.code : 500)
-    .json({ success: false, error: err.message });
+  res.status(err.code ? err.code : 500).json({ ok: false, error: err.message });
 };

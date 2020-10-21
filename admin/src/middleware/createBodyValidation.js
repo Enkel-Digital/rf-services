@@ -50,7 +50,7 @@ module.exports = function createBodyValidation(schema) {
       return next();
     } catch (error) {
       return res.status(400).json({
-        success: false,
+        ok: false,
         error: error.message || "Missing fields in request body",
       });
     }

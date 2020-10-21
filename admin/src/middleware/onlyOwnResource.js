@@ -26,7 +26,7 @@ module.exports = async function onlyOwnResource(req, res, next) {
    */
   if (!req.authenticatedUser)
     return res.status(401).json({
-      success: false,
+      ok: false,
       error: "Missing authenticated user data from token",
     });
 
@@ -36,7 +36,7 @@ module.exports = async function onlyOwnResource(req, res, next) {
   //   req.authenticatedUser.email !== userEmail
   // )
   //   return res.status(403).json({
-  //     success: false,
+  //     ok: false,
   //     error: "Forbidden",
   //   });
   // else return next();

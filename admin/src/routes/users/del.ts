@@ -21,7 +21,7 @@ const logger = createLogger("routes:users:del");
  * @name DELETE /user/:userID
  * @function
  * @param {object} user
- * @returns {object} Success indicator
+ * @returns {object} ok indicator
  */
 router.delete("/:userID", express.json(), onlyOwnResource, async (req, res) => {
   try {
@@ -29,10 +29,10 @@ router.delete("/:userID", express.json(), onlyOwnResource, async (req, res) => {
 
     await SQLdb("userAccounts").where({ id: userID }).update({ deleted: true });
 
-    res.json({ success: true });
+    res.json({ ok: true });
   } catch (error) {
     logger.error(error);
-    res.status(500).json({ success: false, error: error.message });
+    res.status(500).json({ ok: false, error: error.message });
   }
 });
 

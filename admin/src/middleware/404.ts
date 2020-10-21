@@ -17,7 +17,7 @@ module.exports = function (req, res, next) {
     logger.error(req.method, req.originalUrl);
 
     // res.status(404).end();
-    res.status(404).json({ success: false, error: "404" });
+    res.status(404).json({ ok: false, error: "404" });
   } catch (err) {
     // 500 error middleware is called upon catching any errors
     next(err);
