@@ -2,7 +2,7 @@
 import express from "express";
 const router = express.Router();
 
-const auth = require("../middleware/auth");
+import auth from "../middleware/auth";
 
 // Mount all the routes onto their respective base routes
 router.use("/", require("./default"));

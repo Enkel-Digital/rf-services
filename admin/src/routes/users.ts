@@ -10,8 +10,9 @@
 
 import express from "express";
 const router = express.Router();
-const SQLdb = require("@enkeldigital/ce-sql");
-const onlyOwnResource = require("../middleware/onlyOwnResource");
+
+import SQLdb from "@enkeldigital/ce-sql";
+import onlyOwnResource from "../middleware/onlyOwnResource";
 
 import createLogger from "@lionellbriones/logging";
 const logger = createLogger("routes:users");

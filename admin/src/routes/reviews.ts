@@ -7,10 +7,12 @@
  * @todo Add caching strategy for this routes as these are heavy SQL computations that can be cached
  */
 
-const express = require("express");
+import express from "express";
 const router = express.Router();
-const auth = require("../middleware/auth");
-const SQLdb = require("@enkeldigital/ce-sql");
+
+import SQLdb from "@enkeldigital/ce-sql";
+import onlyOwnResource from "../middleware/onlyOwnResource";
+import auth from "../middleware/auth";
 
 const createLogger = require("@lionellbriones/logging").default;
 const logger = createLogger("routes:reviews");

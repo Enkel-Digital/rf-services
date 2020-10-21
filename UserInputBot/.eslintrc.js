@@ -1,7 +1,7 @@
 module.exports = {
   root: true,
   extends: ["standard", "prettier", "prettier/standard"],
-  plugins: ["prettier", "standard", "mocha"],
+  plugins: ["import", "mocha", "node", "prettier", "promise", "standard"],
   parserOptions: {
     sourceType: "module",
   },

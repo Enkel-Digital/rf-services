@@ -14,7 +14,7 @@ import admin from "firebase-admin";
  *  - also will the url tracking work if user use a vpn?
  *  - Does a vpn changethe origin request URL?
  */
-module.exports = async function auth(req, res, next) {
+export default async function auth(req, res, next) {
   try {
     // Get auth token if available and if it follows the "bearer" pattern
     // @notice Headers are all lowercased by express
@@ -40,4 +40,4 @@ module.exports = async function auth(req, res, next) {
       error: error.message || "UNAUTHORIZED",
     });
   }
-};
+}
