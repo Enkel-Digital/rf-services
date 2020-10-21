@@ -3,7 +3,8 @@
  * Using "Firebase Auth" for authentication
  */
 
-import admin from "firebase-admin";
+// Import firebase admin through this utils module that already initialised the firebase app
+import admin from "../utils/firebaseAdmin";
 
 /**
  * Apply this middleware to auth protected routes.
