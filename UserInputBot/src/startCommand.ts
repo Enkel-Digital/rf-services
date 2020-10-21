@@ -37,8 +37,8 @@ module.exports = async function (parsedCommand, update) {
     // @todo Customize this message, can be set by biz user
     this.replyMessage("Send whatever feedback you have here!");
   } catch (error) {
-    // @todo log the error
-    console.error("Registration  failed with: ", error.message);
+    // @todo log the error to error service or something
+    console.error("Registration failed with: ", error.message);
     return this.replyMessage("Registration failed!");
   }
 };
