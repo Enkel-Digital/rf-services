@@ -9,5 +9,6 @@ router.use("/", require("./default"));
 router.use("/user", auth, require("./users"));
 router.use("/bot", auth, require("./bot"));
 router.use("/reviews", require("./reviews"));
+router.use("/links", require("./links"));
 
 module.exports = router;
