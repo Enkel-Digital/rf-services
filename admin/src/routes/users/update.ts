@@ -22,7 +22,12 @@ const logger = createLogger("routes:users:update");
  * @returns {object} ok indicator
  */
 router.put("/", onlyOwnResource, (req, res) => {
-  res.json({ ok: false, error: "not implemented yet" });
+  try {
+    res.json({ ok: false, error: "unimplemented" });
+  } catch (error) {
+    logger.error(error);
+    res.status(500).json({ ok: false, error: error.message });
+  }
 });
 
 module.exports = router;

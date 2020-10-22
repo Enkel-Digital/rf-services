@@ -77,6 +77,51 @@ PUT {{host}}/bot/:botID
 DELETE {{host}}/bot/:botID
 {{authHeader}}
 
+### Get links for bot
+# GET /links/?botID
+GET {{host}}/links/?botID=1
+{{authHeader}}
+
+### Save new link for bot
+# POST /links/new
+POST {{host}}/links/new
+{{authHeader}}
+content-type: application/json
+
+{
+    "link": {
+        "createdBy": 1,
+        "botID": 1,
+        "name": "Feedback link",
+        "description": "Link for feedbacks",
+        "dateStart": "1603372000",
+        "dateEnd": null,
+        "tags": [
+            "product:x",
+            "onlinePurchase"
+        ]
+    }
+}
+
+
+### Update link details
+# PUT /links/?botID
+PUT {{host}}/links/?botID=1
+{{authHeader}}
+content-type: application/json
+
+{
+    "botID": 1,
+    "link": {
+        "name": "New name for link"
+    }
+}
+
+### Delete link
+# DELETE /links/:linkID
+DELETE {{host}}/links/:linkID
+{{authHeader}}
+
 ### Get class reviews
 # GET /reviews/class/:classID
 GET {{host}}/reviews/bot/1

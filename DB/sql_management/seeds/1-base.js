@@ -6,6 +6,8 @@
 const unixseconds = require("unixseconds");
 const yesno = require("yesno");
 
+// @todo Might want to wrap this whole thing in 1 transaction. So if any fails, everything fails and undo state change.
+// So we can retry without having to keep tearing down the DB and creating a new one instead
 exports.seed = async function (knex) {
   if (
     !(await yesno({
@@ -50,13 +52,16 @@ exports.seed = async function (knex) {
     },
   ]);
 
+  // @todo Update business table to set user 1 as the creator of business 1
+
   /* Seed Tables for the bots and the different links for the bots */
 
   await knex("bots").insert([
     {
       createdBy: 1,
       businessID: 1,
-      name: "Feedback bot",
+      // Name is the name of the Bot that you set with BotFather, this is NOT CHANGEABLE
+      name: "rf_tester_bot",
       description: "Bot for getting feedback from users",
       // @todo Might move token away from SQL db in the future
       // token: "", // @todo Put the actual token here!
@@ -68,7 +73,24 @@ exports.seed = async function (knex) {
     {
       createdBy: 1,
       botID: 1,
+      name: "TESTING LINK",
+      description: "Link for testing",
       linkToken: "RAND_BASE64_ENCODED_STRING",
+    },
+  ]);
+
+  await knex("linkTags").insert([
+    {
+      linkID: 1,
+      tag: "testingTag",
+    },
+    {
+      linkID: 1,
+      tag: "product:x",
+    },
+    {
+      linkID: 1,
+      tag: "newCustomer",
     },
   ]);
 
@@ -81,77 +103,6 @@ exports.seed = async function (knex) {
       t_chat_id: 750165132, // Chat ID of mine (https://t.me/Jaimeloeuf)
     },
   ]);
-
-  /* await knex("classTags").insert([
-    {
-      classID: 1,
-      tag: "music",
-    },
-    {
-      classID: 1,
-      tag: "guitar",
-    },
-    {
-      classID: 1,
-      tag: "instrument",
-    },
-    {
-      classID: 1,
-      tag: "beginner",
-    },
-    {
-      classID: 2,
-      tag: "music",
-    },
-    {
-      classID: 2,
-      tag: "guitar",
-    },
-    {
-      classID: 2,
-      tag: "instrument",
-    },
-    {
-      classID: 2,
-      tag: "advanced",
-    },
-    {
-      classID: 2,
-      tag: "professional",
-    },
-    {
-      classID: 3,
-      tag: "cooking",
-    },
-    {
-      classID: 3,
-      tag: "lifestyle",
-    },
-    {
-      classID: 3,
-      tag: "beginner",
-    },
-    {
-      classID: 3,
-      tag: "easy",
-    },
-    {
-      classID: 4,
-      tag: "cooking",
-    },
-    {
-      classID: 4,
-      tag: "lifestyle",
-    },
-    {
-      classID: 4,
-      tag: "advanced",
-    },
-    {
-      classID: 4,
-      tag: "professional",
-    },
-  ]); */
 
   await knex("reviews").insert([
     {
@@ -212,12 +163,12 @@ exports.seed = async function (knex) {
 
   await knex("businessPlanTopups").insert([
     {
-      userID: 1,
-      topupID: 2,
+      businessID: 1,
+      topupID: 1,
     },
   ]);
 
-  /*  */
+  /* WIP seed transaction data */
 
   await knex("transactions").insert([
     {

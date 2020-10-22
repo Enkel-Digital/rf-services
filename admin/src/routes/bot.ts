@@ -15,7 +15,7 @@ import SQLdb from "@enkeldigital/ce-sql";
 import onlyOwnResource from "../middleware/onlyOwnResource";
 
 import createLogger from "@lionellbriones/logging";
-const logger = createLogger("routes:users");
+const logger = createLogger("routes:bot");
 
 /**
  * Get Bot details
@@ -100,7 +100,12 @@ router.post("/new", express.json(), async (req, res) => {
  * @returns {object} ok indicator
  */
 router.put("/:botID", (req, res) => {
-  res.json({ ok: false, error: "not implemented yet" });
+  try {
+    res.json({ ok: false, error: "unimplemented" });
+  } catch (error) {
+    logger.error(error);
+    res.status(500).json({ ok: false, error: error.message });
+  }
 });
 
 /**
