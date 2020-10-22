@@ -55,23 +55,34 @@ GET {{host}}/subscription/1
 ### Get bot details
 # GET /bot/:botID
 GET {{host}}/bot/:botID
+{{authHeader}}
+
+### Get details for all the Bots of a business
+# GET /bot/all/:businessID
+GET {{host}}/bot/all/1
+{{authHeader}}
 
 ### Create new bot
 # POST /bot/new
 POST {{host}}/bot/new
+{{authHeader}}
 
 ### Update bot details
 # PUT /bot/:botID
 PUT {{host}}/bot/:botID
+{{authHeader}}
 
 ### Delete bot
 # DELETE /bot/:botID
 DELETE {{host}}/bot/:botID
+{{authHeader}}
 
 ### Get class reviews
 # GET /reviews/class/:classID
-GET {{host}}/reviews/class/1
+GET {{host}}/reviews/bot/1
+{{authHeader}}
 
 ### Get partner reviews
 # GET /reviews/partner/:partnerID
 GET {{host}}/reviews/partner/3
+{{authHeader}}

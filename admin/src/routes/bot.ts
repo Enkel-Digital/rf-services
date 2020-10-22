@@ -38,6 +38,30 @@ router.get("/:botID", onlyOwnResource, async (req, res) => {
 });
 
 /**
+ * Get details for all the Bots of a business
+ * @name GET /bot/all/:businessID
+ * @returns {Array<Object>} Array of Bot details object
+ *
+ * @todo Ensure businessID is valid and auth token must verify that it is this business
+ */
+router.get("/all/:businessID", onlyOwnResource, async (req, res) => {
+  try {
+    const { businessID } = req.params;
+
+    const bots = await SQLdb("bots")
+      .where({ businessID })
+      .select("id", "createdAt", "createdBy", "name", "description")
+      // Not neccessarily needed, but makes it easier for the client
+      .orderBy("createdAt", "desc");
+
+    res.status(200).json({ ok: true, bots });
+  } catch (error) {
+    logger.error(error);
+    res.status(500).json({ ok: false, error: error.message });
+  }
+});
+
+/**
  * Save new bot
  * @name POST /bot/new
  * @param {String} botID
