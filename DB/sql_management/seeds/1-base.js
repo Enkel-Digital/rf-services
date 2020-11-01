@@ -56,26 +56,14 @@ exports.seed = async function (knex) {
 
   /* Seed Tables for the bots and the different links for the bots */
 
-  await knex("bots").insert([
-    {
-      createdBy: 1,
-      businessID: 1,
-      // Name is the name of the Bot that you set with BotFather, this is NOT CHANGEABLE
-      name: "rf_tester_bot",
-      description: "Bot for getting feedback from users",
-      // @todo Might move token away from SQL db in the future
-      // token: "", // @todo Put the actual token here!
-      token: process.env.testBot_BOT_TOKEN,
-    },
-  ]);
-
   await knex("links").insert([
     {
       createdBy: 1,
       botID: 1,
       name: "TESTING LINK",
       description: "Link for testing",
-      linkToken: "RAND_BASE64_ENCODED_STRING",
+      // Left empty as DB can generate one for us
+      // linkToken: "RAND_BASE64_ENCODED_STRING",
     },
   ]);
 
@@ -99,7 +87,7 @@ exports.seed = async function (knex) {
   await knex("users").insert([
     {
       botID: 1,
-      app_UUID: "", // do we still need this??
+      // app_UUID: "", // do we still need this??
       t_chat_id: 750165132, // Chat ID of mine (https://t.me/Jaimeloeuf)
     },
   ]);
