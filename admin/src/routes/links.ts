@@ -25,10 +25,12 @@ const logger = createLogger("routes:links");
 router.get("/", onlyOwnResource, async (req, res) => {
   try {
     const { botID } = req.query;
+    // @todo validate input, make sure not empty
 
     const links = await SQLdb("links")
       .join("bots", "links.botID", "=", "bots.id")
       .where("links.botID", botID)
+      .orderBy("createdAt", "desc")
       .select(
         // This should be the "name" or ID of the bot registered with tele that shouldnt change
         // The name is used along with the token to generate the actual link
@@ -42,7 +44,6 @@ router.get("/", onlyOwnResource, async (req, res) => {
         "links.dateEnd",
         "links.linkToken"
       );
-    //  orderBy createdAt?
 
     // Construct the link from the linkToken and botName for every link object
     for (const link of links) {
@@ -160,14 +161,19 @@ router.put("/:linkID", (req, res) => {
 
 /**
  * Delete link
- * @name DELETE /links/:botID
+ * @name DELETE /links/:linkID
  * @function
  * @returns {object} ok indicator
  */
-router.delete("/:botID", async (req, res) => {
+router.delete("/:linkID", async (req, res) => {
   try {
+    const { linkID } = req.params;
+
+    await SQLdb("links").where({ id: linkID }).del();
+
     // @todo Update billing status
-    res.json({ ok: false, error: "unimplemented" });
+
+    res.status(200).json({ ok: false, error: "unimplemented" });
   } catch (error) {
     logger.error(error);
     res.status(500).json({ ok: false, error: error.message });
