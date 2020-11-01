@@ -36,6 +36,21 @@ GET {{host}}/
 GET {{host}}/user/social@enkeldigital.com
 {{authHeader}}
 
+### Create new employee account and send them a email with a link to complete account creation
+# Use a local address in the optional redirectUrl field
+POST {{host}}/user/new
+{{authHeader}}
+content-type: application/json
+
+{
+    "accountCreationRequest": {
+        "partnerID": 1,
+        "email": "test@enkeldigital.com",
+        "admin": false
+    },
+    "redirectUrl": "http://localhost:8081/#/signup"
+}
+
 ### Get all subscription plans
 GET {{host}}/subscription/plans/all
 
@@ -119,15 +134,15 @@ content-type: application/json
 
 ### Delete link
 # DELETE /links/:linkID
-DELETE {{host}}/links/:linkID
+DELETE {{host}}/links/1
 {{authHeader}}
 
-### Get class reviews
-# GET /reviews/class/:classID
+### Get review stats and review IDs for bot belonging to a business
+# GET /reviews/bot/:botID
 GET {{host}}/reviews/bot/1
 {{authHeader}}
 
-### Get partner reviews
-# GET /reviews/partner/:partnerID
-GET {{host}}/reviews/partner/3
+### Get review details with a reviewID
+# GET /reviews/details/?:reviewID||?:reviewIDs
+GET {{host}}/reviews/details/?reviewID=1
 {{authHeader}}
