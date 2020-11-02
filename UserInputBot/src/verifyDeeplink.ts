@@ -1,5 +1,8 @@
 /**
  * Verify that the deep link is valid
+ *
+ * Deep link contains
+ * survey ID
  */
 export default async function (SQLdb, token: String) {
   const validLink = await SQLdb("links")
@@ -12,4 +15,6 @@ export default async function (SQLdb, token: String) {
   // @todo Might allow devs to customize error message
   if (!validLink)
     throw new Error("Invalid token! Contact app developer for help");
+
+  return validLink;
 }
